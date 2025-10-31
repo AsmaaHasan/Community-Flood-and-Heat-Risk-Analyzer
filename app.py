@@ -370,27 +370,59 @@ def main():
         
         st.header("ℹ️ Data Sources & Transparency")
         
+        api_status = {
+            'weather': bool(os.getenv('OPENWEATHER_API_KEY', '')),
+            'news': bool(os.getenv('NEWSAPI_KEY', ''))
+        }
+        
         col1, col2, col3 = st.columns(3)
         
         with col1:
             st.markdown("**Satellite & Weather Data**")
-            st.write("• OpenWeatherMap API")
-            st.write("• NASA GPM (Rainfall)")
-            st.write("• Open Elevation API")
+            weather_status = "🟢 Live" if api_status['weather'] else "🟡 Demo"
+            st.write(f"• OpenWeatherMap API {weather_status}")
+            st.write("• Open Elevation API 🟢 Live")
+            st.write("• Rainfall Data 🟡 Simulated*")
+            st.caption("*NASA GPM integration planned for production")
         
         with col2:
             st.markdown("**News & Sentiment Data**")
-            st.write("• NewsAPI")
-            st.write("• GDELT Project")
-            st.write("• VADER Sentiment Analysis")
+            news_status = "🟢 Live" if api_status['news'] else "🟡 Demo"
+            st.write(f"• NewsAPI {news_status}")
+            st.write("• GDELT Project 🟢 Live")
+            st.write("• VADER Sentiment 🟢 Active")
         
         with col3:
             st.markdown("**Model Information**")
             st.write("• Random Forest Classifier")
             st.write("• 19 Geospatial Features")
             st.write("• NLP Feature Fusion (20%)")
+            st.caption("Models trained on synthetic data for MVP demonstration")
         
         st.info(f"**Last Updated:** {features['timestamp'].strftime('%Y-%m-%d %H:%M:%S')} | **Location:** {lat:.4f}, {lon:.4f}")
+        
+        with st.expander("⚠️ MVP Limitations & Production Roadmap"):
+            st.markdown("""
+            **Current MVP Status:**
+            - ✅ Real-time weather data (when API key provided)
+            - ✅ Real elevation data from Open Elevation API
+            - ✅ Real news sentiment analysis (when API keys provided)
+            - 🟡 Rainfall data uses realistic simulation pending NASA EarthData integration
+            - 🟡 ML models trained on synthetic data for demonstration purposes
+            
+            **Production Enhancements Planned:**
+            - Integrate NASA EarthData API for genuine satellite rainfall data
+            - Train models on historical flood/heat event datasets
+            - Validate model performance on held-out test data
+            - Add Sentinel-1 SAR for real flood detection
+            - Implement model retraining pipeline with quarterly updates
+            - Add user authentication and saved locations
+            - Deploy email/SMS alert notifications
+            
+            **For Research/Validation:** This MVP demonstrates the technical architecture and 
+            data fusion workflow. Production deployment requires calibration with historical 
+            climate event data and regulatory approval for community early warning systems.
+            """)
     
     else:
         st.info("👈 Configure your settings in the sidebar and click 'Analyze Risk' to begin.")
