@@ -6,8 +6,8 @@ An AI-driven early warning system that helps communities assess and prepare for 
 
 ### Core Capabilities
 - 🛰️ **Real-time Data Integration**: Connects to OpenWeatherMap, NASA GPM, GDELT, NewsAPI, and elevation services
-- 🤖 **Machine Learning Predictions**: Random Forest models for flood and heat risk classification (Low/Medium/High)
-- 📰 **NLP Sentiment Analysis**: VADER-based analysis of news articles to detect risk signals
+- 🤖 **Machine Learning Predictions**: Random Forest + XGBoost ensemble models for risk classification (Low/Medium/High)
+- 📰 **Enhanced NLP Analysis**: TF-IDF classification, Named Entity Recognition, urgency detection, and VADER sentiment
 - 🗺️ **Interactive Maps**: Folium-based visualization with color-coded risk zones
 - 📊 **Historical Trends**: 30-day trend analysis with Plotly visualizations
 - 🔍 **Explainable AI**: Feature importance rankings show which factors drive predictions
@@ -48,7 +48,10 @@ While the system works with demonstration data, you can enhance it with real API
 1. **OpenWeatherMap** (free tier): https://openweathermap.org/api
 2. **NewsAPI** (free tier): https://newsapi.org/register
 
-Add keys via the sidebar in the application or set as environment variables.
+**To add API keys:**
+- Go to the Replit Secrets tab and add `OPENWEATHER_API_KEY` and/or `NEWSAPI_KEY`
+- The sidebar will show the status of configured keys (without exposing their values)
+- Keys are automatically used when available, with graceful fallback to demo data
 
 ## Usage
 
@@ -83,9 +86,19 @@ The application is already configured to run automatically. Simply open the webv
 - **Sentinel/ERA5**: 🟡 Simulated climate data (integration planned)
 
 ### News & Sentiment
+
+**Enhanced NLP Analysis (TF-IDF + VADER + NER):**
 - **NewsAPI**: ✅ Real news articles from global sources (API key optional)
 - **GDELT Project**: ✅ Real global event database
-- **VADER**: ✅ Real-time sentiment intensity analysis
+- **VADER Sentiment**: ✅ Real-time sentiment intensity analysis
+- **TF-IDF Classification**: ✅ ML-based text classification for flood/heat relevance
+- **Named Entity Recognition**: ✅ Extraction of locations, organizations, and persons
+- **Urgency Detection**: ✅ Temporal pattern and urgency indicator analysis
+- **Weighted Keywords**: ✅ Context-aware keyword matching with importance scores
+
+The system offers two NLP modes:
+- **Enhanced** (default): Combines TF-IDF classification (25%), urgency detection (25%), weighted keywords (30%), and sentiment (20%)
+- **Basic**: Uses only VADER sentiment analysis with simple keyword matching
 
 ## Model Details
 

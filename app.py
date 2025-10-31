@@ -9,6 +9,7 @@ import os
 
 from data_collectors import NewsDataCollector
 from nlp_analyzer import NewsTextAnalyzer
+from enhanced_nlp_analyzer import EnhancedNewsTextAnalyzer
 from geospatial_features import GeospatialFeatureExtractor
 from risk_model import RiskPredictionModel
 from enhanced_risk_model import EnhancedRiskPredictionModel
@@ -65,10 +66,15 @@ def load_legacy_model():
     return model, training_results
 
 @st.cache_data(ttl=600)
-def fetch_news_data(location, query_type):
+def fetch_news_data(location, query_type, use_enhanced_nlp=True):
     """Fetch and cache news data"""
     news_collector = NewsDataCollector()
-    nlp_analyzer = NewsTextAnalyzer()
+    
+    # Use enhanced NLP analyzer by default
+    if use_enhanced_nlp:
+        nlp_analyzer = EnhancedNewsTextAnalyzer()
+    else:
+        nlp_analyzer = NewsTextAnalyzer()
     
     flood_articles = news_collector.get_news_articles('flood', location, days=7)
     heat_articles = news_collector.get_news_articles('heat heatwave', location, days=7)
@@ -79,17 +85,24 @@ def fetch_news_data(location, query_type):
     all_flood_articles = flood_articles + gdelt_flood
     all_heat_articles = heat_articles + gdelt_heat
     
-    flood_signal = nlp_analyzer.get_aggregate_risk_signal(all_flood_articles, 'flood')
-    heat_signal = nlp_analyzer.get_aggregate_risk_signal(all_heat_articles, 'heat')
-    
-    flood_df = nlp_analyzer.analyze_articles(all_flood_articles, 'flood')
-    heat_df = nlp_analyzer.analyze_articles(all_heat_articles, 'heat')
+    # Get aggregate signals
+    if use_enhanced_nlp:
+        flood_signal = nlp_analyzer.get_aggregate_risk_signal_enhanced(all_flood_articles, 'flood')
+        heat_signal = nlp_analyzer.get_aggregate_risk_signal_enhanced(all_heat_articles, 'heat')
+        flood_df = nlp_analyzer.analyze_articles_enhanced(all_flood_articles, 'flood')
+        heat_df = nlp_analyzer.analyze_articles_enhanced(all_heat_articles, 'heat')
+    else:
+        flood_signal = nlp_analyzer.get_aggregate_risk_signal(all_flood_articles, 'flood')
+        heat_signal = nlp_analyzer.get_aggregate_risk_signal(all_heat_articles, 'heat')
+        flood_df = nlp_analyzer.analyze_articles(all_flood_articles, 'flood')
+        heat_df = nlp_analyzer.analyze_articles(all_heat_articles, 'heat')
     
     return {
         'flood_signal': flood_signal,
         'heat_signal': heat_signal,
         'flood_articles': flood_df,
-        'heat_articles': heat_df
+        'heat_articles': heat_df,
+        'nlp_type': 'Enhanced (TF-IDF + VADER)' if use_enhanced_nlp else 'Basic (VADER only)'
     }
 
 def main():
@@ -117,14 +130,15 @@ def main():
         
         st.subheader("🔑 API Configuration")
         with st.expander("API Keys (Optional)"):
-            st.info("API keys are optional. The system will use demonstration data if not provided.")
-            openweather_key = st.text_input("OpenWeatherMap API Key", type="password", value="")
-            newsapi_key = st.text_input("NewsAPI Key", type="password", value="")
+            st.info("⚠️ For production use, please set API keys in Replit Secrets (not here).")
+            st.markdown("The system will automatically use keys from environment if available, or fall back to demo data.")
             
-            if openweather_key:
-                os.environ['OPENWEATHER_API_KEY'] = openweather_key
-            if newsapi_key:
-                os.environ['NEWSAPI_KEY'] = newsapi_key
+            # Show current status of API keys (without exposing values)
+            has_openweather = bool(os.environ.get('OPENWEATHER_API_KEY'))
+            has_newsapi = bool(os.environ.get('NEWSAPI_KEY'))
+            
+            st.write(f"OpenWeatherMap: {'✅ Configured' if has_openweather else '❌ Not set (using demo data)'}")
+            st.write(f"NewsAPI: {'✅ Configured' if has_newsapi else '❌ Not set (using demo data)'}")
         
         st.subheader("🤖 Model Selection")
         model_type = st.radio(
@@ -143,6 +157,8 @@ def main():
         show_model_comparison = st.checkbox("Show Model Performance Comparison", value=True)
         
         st.subheader("📊 Analysis Options")
+        use_enhanced_nlp = st.checkbox("Use Enhanced NLP (TF-IDF + NER)", value=True,
+                                        help="Enhanced NLP adds ML classification, named entity recognition, and urgency detection")
         show_historical = st.checkbox("Show Historical Trends", value=True)
         show_nlp_details = st.checkbox("Show NLP Analysis Details", value=True)
         show_feature_importance = st.checkbox("Show Feature Importance", value=True)
@@ -219,7 +235,7 @@ def main():
             ml_features = feature_extractor.prepare_ml_features(features, flood_factors, heat_factors)
         
         with st.spinner("Analyzing news articles and social signals..."):
-            news_data = fetch_news_data(location_name, 'both')
+            news_data = fetch_news_data(location_name, 'both', use_enhanced_nlp)
             flood_nlp_score = news_data['flood_signal']['avg_risk_score']
             heat_nlp_score = news_data['heat_signal']['avg_risk_score']
         
@@ -228,7 +244,7 @@ def main():
             heat_prediction = model.predict_heat_risk(ml_features, heat_nlp_score)
         
         st.header("🚨 Current Risk Assessment")
-        st.caption(f"Predictions generated using: {flood_prediction.get('model_used', model_type)}")
+        st.caption(f"Predictions generated using: {flood_prediction.get('model_used', model_type)} | NLP: {news_data.get('nlp_type', 'Basic')}")
         
         col1, col2 = st.columns(2)
         

@@ -37,14 +37,27 @@ Preferred communication style: Simple, everyday language.
 
 ### NLP Analysis Architecture
 
-**Sentiment-Based Risk Detection**: Uses VADER (Valence Aware Dictionary and sEntiment Reasoner) sentiment analysis to process news articles:
+**Enhanced Multi-Method NLP Analysis**: The system implements two NLP analysis modes:
 
-- Keyword extraction for flood-specific and heat-specific terms
-- Risk modifier detection (warning, alert, severe, emergency)
-- Sentiment scoring with emphasis on negative sentiment as risk indicator
-- Text preprocessing with NLTK tokenization and stopword removal
+**Enhanced NLP (Default)** - Multi-component approach combining:
+1. **TF-IDF Text Classification**: Naive Bayes and Random Forest classifiers trained on synthetic flood/heat/neutral text samples to determine article relevance and risk level
+2. **Named Entity Recognition**: NLTK-based NER to extract locations, organizations, and persons mentioned in articles for contextual awareness
+3. **Urgency Detection**: Pattern matching for temporal indicators (e.g., "within 2 hours", "immediate") and urgency keywords (emergency, evacuate, critical) with weighted scoring
+4. **Weighted Keyword Analysis**: Context-aware keyword matching where terms like "catastrophic flood" receive higher weights than generic terms like "rain"
+5. **VADER Sentiment**: Baseline sentiment analysis for negative/positive tone detection
 
-**Rationale**: VADER is chosen over transformer-based models for its speed, zero training requirements, and proven effectiveness on social media/news text. This keeps the system lightweight and responsive.
+**Risk Scoring Formula** (Enhanced Mode):
+- Weighted Keywords: 30%
+- Urgency Detection: 25%
+- ML Classification: 25%
+- Sentiment Analysis: 20%
+
+**Basic NLP (Legacy)** - Simple VADER-based approach:
+- Keyword frequency counting
+- Risk modifier detection
+- VADER sentiment scoring
+
+**Design Rationale**: Enhanced NLP provides significantly better risk detection by combining multiple signals, while Basic NLP remains available as a fast, lightweight fallback. The TF-IDF approach avoids the heavyweight transformer models (BERT) that would increase memory/compute requirements, keeping the system accessible for community-level deployment.
 
 ### Machine Learning Architecture
 
