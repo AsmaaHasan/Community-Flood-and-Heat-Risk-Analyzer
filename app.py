@@ -434,10 +434,20 @@ def main():
                 st.metric("High Risk Articles", news_data['flood_signal']['high_risk_articles'])
                 
                 if len(news_data['flood_articles']) > 0:
-                    st.dataframe(
-                        news_data['flood_articles'][['title', 'risk_score', 'sentiment_compound', 'source']].head(5),
-                        use_container_width=True
-                    )
+                    # Determine which column to use based on NLP type
+                    flood_df = news_data['flood_articles']
+                    risk_col = 'total_risk_score' if 'total_risk_score' in flood_df.columns else 'risk_score'
+                    
+                    # Select available columns
+                    display_cols = ['title', risk_col, 'sentiment_compound', 'source']
+                    available_cols = [col for col in display_cols if col in flood_df.columns]
+                    
+                    if available_cols:
+                        display_df = flood_df[available_cols].head(5)
+                        # Rename for display
+                        if risk_col == 'total_risk_score':
+                            display_df = display_df.rename(columns={'total_risk_score': 'risk_score'})
+                        st.dataframe(display_df, use_container_width=True)
             
             with col2:
                 st.subheader("Heat-Related News")
@@ -446,10 +456,20 @@ def main():
                 st.metric("High Risk Articles", news_data['heat_signal']['high_risk_articles'])
                 
                 if len(news_data['heat_articles']) > 0:
-                    st.dataframe(
-                        news_data['heat_articles'][['title', 'risk_score', 'sentiment_compound', 'source']].head(5),
-                        use_container_width=True
-                    )
+                    # Determine which column to use based on NLP type
+                    heat_df = news_data['heat_articles']
+                    risk_col = 'total_risk_score' if 'total_risk_score' in heat_df.columns else 'risk_score'
+                    
+                    # Select available columns
+                    display_cols = ['title', risk_col, 'sentiment_compound', 'source']
+                    available_cols = [col for col in display_cols if col in heat_df.columns]
+                    
+                    if available_cols:
+                        display_df = heat_df[available_cols].head(5)
+                        # Rename for display
+                        if risk_col == 'total_risk_score':
+                            display_df = display_df.rename(columns={'total_risk_score': 'risk_score'})
+                        st.dataframe(display_df, use_container_width=True)
         
         st.markdown("---")
         
