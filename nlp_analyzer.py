@@ -176,11 +176,11 @@ class NewsTextAnalyzer:
             }
         
         return {
-            'avg_risk_score': df['risk_score'].mean(),
-            'avg_sentiment': df['sentiment_compound'].mean(),
+            'avg_risk_score': float(df['risk_score'].mean()),
+            'avg_sentiment': float(df['sentiment_compound'].mean()),
             'total_articles': len(df),
-            'high_risk_articles': len(df[df['risk_score'] > 0.6]),
-            'keyword_density': df['keyword_count'].mean()
+            'high_risk_articles': int(len(df[df['risk_score'] > 0.6])),
+            'keyword_density': float(df['keyword_count'].mean())
         }
     
     def clean_text(self, text: str) -> str:

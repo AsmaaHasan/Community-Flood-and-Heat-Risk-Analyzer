@@ -26,9 +26,9 @@ class GeospatialFeatureExtractor:
         soil_moisture = self.climate_collector.get_soil_moisture(lat, lon)
         land_cover = self.climate_collector.get_land_cover_type(lat, lon)
         
-        recent_rainfall = rainfall_data['rainfall_mm'].tail(3).mean()
-        total_weekly_rainfall = rainfall_data['rainfall_mm'].sum()
-        rainfall_trend = rainfall_data['rainfall_mm'].tail(3).mean() - rainfall_data['rainfall_mm'].head(3).mean()
+        recent_rainfall = float(rainfall_data['rainfall_mm'].tail(3).mean())
+        total_weekly_rainfall = float(rainfall_data['rainfall_mm'].sum())
+        rainfall_trend = float(rainfall_data['rainfall_mm'].tail(3).mean() - rainfall_data['rainfall_mm'].head(3).mean())
         
         temp = current_weather['temperature']
         historical_mean_temp = 27.0

@@ -244,8 +244,9 @@ def main():
             
             with col1:
                 st.subheader("Top Flood Risk Factors")
+                flood_features_data = flood_prediction['top_features']
                 flood_features = pd.DataFrame(
-                    flood_prediction['top_features'],
+                    flood_features_data,
                     columns=['Feature', 'Importance']
                 )
                 fig_flood = px.bar(
@@ -261,8 +262,9 @@ def main():
             
             with col2:
                 st.subheader("Top Heat Risk Factors")
+                heat_features_data = heat_prediction['top_features']
                 heat_features = pd.DataFrame(
-                    heat_prediction['top_features'],
+                    heat_features_data,
                     columns=['Feature', 'Importance']
                 )
                 fig_heat = px.bar(

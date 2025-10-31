@@ -9,7 +9,7 @@ import json
 class WeatherDataCollector:
     """Collects meteorological data from OpenWeatherMap API"""
     
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: str = ''):
         self.api_key = api_key or os.getenv('OPENWEATHER_API_KEY', '')
         self.base_url = "https://api.openweathermap.org/data/2.5"
         
@@ -165,7 +165,7 @@ class ElevationDataCollector:
 class NewsDataCollector:
     """Collects news articles from NewsAPI and GDELT"""
     
-    def __init__(self, newsapi_key: str = None):
+    def __init__(self, newsapi_key: str = ''):
         self.newsapi_key = newsapi_key or os.getenv('NEWSAPI_KEY', '')
         self.newsapi_url = "https://newsapi.org/v2/everything"
         self.gdelt_url = "https://api.gdeltproject.org/api/v2/doc/doc"

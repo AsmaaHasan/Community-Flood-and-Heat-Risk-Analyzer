@@ -59,7 +59,7 @@ class RiskMapVisualizer:
     
     def add_risk_marker(self, m: folium.Map, lat: float, lon: float, 
                        risk_type: str, risk_level: str, risk_score: float,
-                       details: Dict = None) -> folium.Map:
+                       details: Dict = {}) -> folium.Map:
         """Add risk marker to map"""
         color = self.get_risk_color(risk_level)
         icon = self.get_risk_icon(risk_type)
@@ -171,26 +171,42 @@ class RiskMapVisualizer:
         if heatmap_data:
             self.add_heatmap(m, heatmap_data)
         
-        self.add_legend(m)
+        m.get_root().html.add_child(folium.Element('''
+        <div style="position: fixed; 
+                    bottom: 50px; right: 50px; width: 200px; height: auto;
+                    background-color: white; z-index:9999; font-size:14px;
+                    border:2px solid grey; border-radius: 5px; padding: 10px">
+            <p style="margin: 0 0 10px 0; font-weight: bold;">Risk Levels</p>
+            <p style="margin: 5px 0;"><i style="background:#28a745; width: 20px; height: 20px; 
+               display: inline-block; border-radius: 3px;"></i> Low Risk</p>
+            <p style="margin: 5px 0;"><i style="background:#ffc107; width: 20px; height: 20px; 
+               display: inline-block; border-radius: 3px;"></i> Medium Risk</p>
+            <p style="margin: 5px 0;"><i style="background:#dc3545; width: 20px; height: 20px; 
+               display: inline-block; border-radius: 3px;"></i> High Risk</p>
+        </div>
+        '''))
         
         return m
     
     def create_single_location_map(self, lat: float, lon: float,
                                    flood_risk: Dict, heat_risk: Dict,
-                                   features: Dict = None) -> folium.Map:
+                                   features: Dict = {}) -> folium.Map:
         """Create detailed map for single location with both risk types"""
         m = self.create_base_map(zoom_start=12)
         
+        temp_value = features.get('current_temperature', 0) if features else 0
+        humidity_value = features.get('humidity', 70) if features else 70
+        
         flood_details = {
-            'temperature': features.get('current_temperature', 0) if features else 0,
+            'temperature': temp_value,
             'rainfall': features.get('recent_rainfall_3day', 0) if features else 0,
             'elevation': features.get('elevation', 0) if features else 0
         }
         
         heat_details = {
-            'temperature': features.get('current_temperature', 0) if features else 0,
-            'humidity': features.get('humidity', 0) if features else 0,
-            'heat_index': flood_details['temperature'] + (0.5 * (heat_details.get('humidity', 70) - 40) / 10)
+            'temperature': temp_value,
+            'humidity': humidity_value,
+            'heat_index': temp_value + (0.5 * (humidity_value - 40) / 10)
         }
         
         self.add_risk_marker(
