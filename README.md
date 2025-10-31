@@ -11,6 +11,7 @@ An AI-driven early warning system that helps communities assess and prepare for 
 - 🗺️ **Interactive Maps**: Folium-based visualization with color-coded risk zones
 - 📊 **Historical Trends**: 30-day trend analysis with Plotly visualizations
 - 🔍 **Explainable AI**: Feature importance rankings show which factors drive predictions
+- 🗄️ **Database Backend**: PostgreSQL with user management schema (authentication UI in progress)
 
 ### Technical Highlights
 - **Multi-source Data Fusion**: Combines 19 geospatial features with NLP sentiment scores
@@ -32,14 +33,40 @@ An AI-driven early warning system that helps communities assess and prepare for 
 - `map_visualizer.py`: Interactive Folium map generation
 - `app.py`: Streamlit dashboard with comprehensive UI
 
+## 📚 Documentation
+
+**New to this project?** Start here:
+- 🚀 **[QUICKSTART.md](QUICKSTART.md)** - Get running in 5 minutes
+- 📖 **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Complete deployment instructions
+- 👨‍💻 **[DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)** - Technical documentation for developers
+- 🤝 **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute to the project
+- ⚙️ **[.env.example](.env.example)** - Environment variables configuration template
+
 ## Installation & Setup
 
+### Quick Start
+
+**On Replit (Recommended)**:
+1. Click the green **Run** button
+2. Wait 10-15 seconds for server to start
+3. Application opens in webview panel
+4. See [QUICKSTART.md](QUICKSTART.md) for detailed guide
+
+**Locally**:
+```bash
+pip install -r requirements.txt
+streamlit run app.py --server.port 5000
+```
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for production deployment.
+
 ### Prerequisites
-All dependencies are pre-installed in this Replit environment:
-- Python 3.11
-- Streamlit, Folium, Plotly, Scikit-learn
+All dependencies are listed in `requirements.txt`:
+- Python 3.11+
+- Streamlit, Folium, Plotly
+- Scikit-learn, XGBoost
 - NLTK, VADER Sentiment
-- Pandas, NumPy, GeoPandas, Rasterio
+- SQLAlchemy, PostgreSQL
+- See complete list in `pyproject.toml`
 
 ### Optional API Keys
 
@@ -183,6 +210,35 @@ This project uses data from:
 - GDELT Project (Public Domain)
 - NewsAPI (subject to terms of service)
 
+## Project Documentation
+
+### 📚 Complete Guide Collection
+This project includes comprehensive documentation for all users:
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Production deployment guide
+- **[DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)** - Technical architecture and API docs
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Complete project overview
+- **[.env.example](.env.example)** - Environment configuration template
+
+### 🗂️ Project Structure
+```
+📁 Project Root
+├── app.py                      # Main application
+├── enhanced_risk_model.py      # Ensemble ML (RF + XGBoost)
+├── enhanced_nlp_analyzer.py    # Multi-method NLP
+├── database.py                 # PostgreSQL ORM models
+├── data_collectors.py          # API integrations
+├── geospatial_features.py      # Feature extraction
+├── map_visualizer.py           # Map visualization
+├── requirements.txt            # Dependencies
+└── Documentation files (*.md)
+```
+
 ## Support
 
-For technical issues or questions about the implementation, refer to the inline code documentation and BRD specifications in the `attached_assets` folder.
+- 📖 **Documentation**: See all `.md` files in the project root
+- 🐛 **Issues**: Check inline code comments and LSP diagnostics
+- 💡 **Architecture**: Review `replit.md` for detailed system design
+- 🤝 **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
