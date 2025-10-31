@@ -11,6 +11,7 @@ from data_collectors import NewsDataCollector
 from nlp_analyzer import NewsTextAnalyzer
 from geospatial_features import GeospatialFeatureExtractor
 from risk_model import RiskPredictionModel
+from enhanced_risk_model import EnhancedRiskPredictionModel
 from map_visualizer import RiskMapVisualizer
 
 st.set_page_config(
@@ -49,9 +50,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-@st.cache_resource
-def load_model():
+@st.cache_resource(show_spinner=False)
+def load_model(model_type='ensemble'):
     """Load or train the risk prediction model"""
+    model = EnhancedRiskPredictionModel(model_type=model_type)
+    training_results = model.train()
+    return model, training_results
+
+@st.cache_resource
+def load_legacy_model():
+    """Load legacy Random Forest only model for backwards compatibility"""
     model = RiskPredictionModel()
     training_results = model.train()
     return model, training_results
@@ -118,6 +126,22 @@ def main():
             if newsapi_key:
                 os.environ['NEWSAPI_KEY'] = newsapi_key
         
+        st.subheader("🤖 Model Selection")
+        model_type = st.radio(
+            "Choose ML Model",
+            ["Ensemble (RF + XGB)", "Random Forest Only", "XGBoost Only"],
+            help="Ensemble combines both models for best accuracy"
+        )
+        
+        model_type_map = {
+            "Ensemble (RF + XGB)": "ensemble",
+            "Random Forest Only": "random_forest",
+            "XGBoost Only": "xgboost"
+        }
+        selected_model = model_type_map[model_type]
+        
+        show_model_comparison = st.checkbox("Show Model Performance Comparison", value=True)
+        
         st.subheader("📊 Analysis Options")
         show_historical = st.checkbox("Show Historical Trends", value=True)
         show_nlp_details = st.checkbox("Show NLP Analysis Details", value=True)
@@ -132,16 +156,58 @@ def main():
     if analyze_button or st.session_state.analyzed:
         st.session_state.analyzed = True
         
-        with st.spinner("Loading risk prediction model..."):
-            model, training_results = load_model()
+        with st.spinner(f"Loading {model_type} model..."):
+            model, training_results = load_model(selected_model)
         
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Model: Flood Accuracy", f"{training_results['flood_accuracy']:.1%}")
-        with col2:
-            st.metric("Model: Heat Accuracy", f"{training_results['heat_accuracy']:.1%}")
-        with col3:
-            st.metric("Training Samples", f"{training_results['training_samples']}")
+        if show_model_comparison and 'random_forest' in training_results:
+            st.header("📊 Model Performance Comparison")
+            
+            comparison_df = model.get_performance_comparison()
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Selected Model", model_type)
+            with col2:
+                rf_acc = training_results['random_forest']['flood_accuracy']
+                xgb_acc = training_results['xgboost']['flood_accuracy']
+                st.metric("Best Flood Model", 
+                         "XGBoost" if xgb_acc > rf_acc else "Random Forest",
+                         f"{max(rf_acc, xgb_acc):.1%}")
+            with col3:
+                rf_heat = training_results['random_forest']['heat_accuracy']
+                xgb_heat = training_results['xgboost']['heat_accuracy']
+                st.metric("Best Heat Model",
+                         "XGBoost" if xgb_heat > rf_heat else "Random Forest",
+                         f"{max(rf_heat, xgb_heat):.1%}")
+            
+            fig_comparison = go.Figure(data=[
+                go.Bar(name='Flood Accuracy', 
+                      x=comparison_df['Model'], 
+                      y=comparison_df['Flood Accuracy'],
+                      marker_color='#1f77b4'),
+                go.Bar(name='Heat Accuracy', 
+                      x=comparison_df['Model'], 
+                      y=comparison_df['Heat Accuracy'],
+                      marker_color='#ff7f0e')
+            ])
+            fig_comparison.update_layout(
+                title='Model Accuracy Comparison',
+                xaxis_title='Model',
+                yaxis_title='Accuracy',
+                barmode='group',
+                height=300
+            )
+            st.plotly_chart(fig_comparison, use_container_width=True)
+            
+            st.markdown("---")
+        else:
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Selected Model", model_type)
+            with col2:
+                st.metric("Training Samples", f"{training_results.get('training_samples', 800)}")
+            with col3:
+                st.metric("Test Samples", f"{training_results.get('test_samples', 200)}")
         
         st.markdown("---")
         
@@ -162,6 +228,7 @@ def main():
             heat_prediction = model.predict_heat_risk(ml_features, heat_nlp_score)
         
         st.header("🚨 Current Risk Assessment")
+        st.caption(f"Predictions generated using: {flood_prediction.get('model_used', model_type)}")
         
         col1, col2 = st.columns(2)
         
